@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:eb="http://docs.oasis-open.org/ebxml-msg/ebms/v3.0/ns/core/200704/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+  <soap:Header><wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" soap:mustUnderstand="true"><wsse:BinarySecurityToken wsu:Id="X509Token-00000000-0000-0000-0000-000000000001" EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary" ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3">MIIDKTCCAhGgAwIBAgIBATANBgkqhkiG9w0BAQsFADBYMQswCQYDVQQGEwJXVzEOMAwGA1UECgwFQWthbWkxITAfBgNVBAsMGEFrYW1pIHRlc3RpbmcgZGVwYXJ0bWVudDEWMBQGA1UEAwwNQWthbWkgQVM0IEdlbTAeFw0yNDAxMDEwMDAwMDBaFw00NDAxMDEwMDAwMDBaMFgxCzAJBgNVBAYTAldXMQ4wDAYDVQQKDAVBa2FtaTEhMB8GA1UECwwYQWthbWkgdGVzdGluZyBkZXBhcnRtZW50MRYwFAYDVQQDDA1Ba2FtaSBBUzQgR2VtMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1dLsBAVCkg7n8BeDn2ui0EdGJdqphXrQXmhjw1CzutkVeLiAr/xegX+RMsBEBQNPq5LbEffYHzZ284oyWfNffZp+STXIngSLf4JBBRVyw51VDpZoLoTDOJCOmrw7vOnsrZDqN8bo0tkPdmquGOb/n6jUO1RX8e+maJw4QheqiF3nbpSv2R596q5tT4YdUPRpOMR9cnfJiiJXlrLwuL7qsZhfmJYI597R56fb0ssDZ39M0WoicHAwhPEVilNF7Wu3EsHKlXdVdjxINjT9WHG+1mPU7N1zAq0Y7WDqB/WKt0cSk5XBQhCeKYKYunKiiXJBgrdPtQ9eIsDKys0QnjNBrwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQAlgD245wk963tc1Kb4yXCwdO9ytNlZBhfd+AO1UKICTrD5fp1MXFfFCR6HwBs2kr1EdS1fJveOFkVkuZucw0CIaMsUrN8/FEadszln6v6dcZ97Sgzj9/vTi+KNyqy33JtCk7sJHStpEzCE9x6ttLVuCD3Z4TvzAuJEMxe1Wwlp9EgV6QY1m9ncMlfb074p3nLxdawQpAEruXsp7uLKFPdeLt9ydVk72cHbR8GtvN7BU8h0njocB7PW/siLdlESEvf2meouuxYT5opmB0D+zGc3dEOdt4dCClSdzoV5YrrAySkfHZ1axCpUXpwnvdxV6Q3K153oOc6w41wEn+kuR08H</wsse:BinarySecurityToken><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:SignedInfo>
+  <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+  <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+  <ds:Reference URI="#soapBody">
+    <ds:Transforms>
+      <ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+    </ds:Transforms>
+    <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+    <ds:DigestValue>oLSSpY5TX6t2LIAXd0GPvFLeiEOHqOndH0g/3/O7+K8=</ds:DigestValue>
+  </ds:Reference>
+  <ds:Reference URI="#ebMessage">
+    <ds:Transforms>
+      <ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+    </ds:Transforms>
+    <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+    <ds:DigestValue>/i/x0gm5BF/NutCyJXmXsNCH3CF0xtO7oYM0Wc7uIJA=</ds:DigestValue>
+  </ds:Reference>
+  <ds:Reference URI="cid:attachment-99999999-8888-7777-6666-555555555555@example.com">
+    <ds:Transforms>
+      <ds:Transform Algorithm="http://docs.oasis-open.org/wss/oasis-wss-SwAProfile-1.1#Attachment-Content-Signature-Transform"/>
+    </ds:Transforms>
+    <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+    <ds:DigestValue>Iib2eXnYAaSL1b++kzlHjhRZvM2j3ihHj0noUX5JZfk=</ds:DigestValue>
+  </ds:Reference>
+</ds:SignedInfo><ds:SignatureValue>L11kH/1gnw9VbS7HXlsLSEoH3GcCntOf10/kP+ZmxQb4kFevk9JKeFS7nIY9884kp4SH6vTytjBSxyynlwFoLNF2wkv0Gup0GAy4fqMtQUbS+LDll6MRS+ITX/SZ9aVsiW8XF/txmYXIieaUcQszTmd72KiAiYhkSuF6zOtFtZoMD9ykqp2yhfcJJOpY9ME11pencvGMK+Bmp8IiRoNB7hwLK8BBuMQ4rlbSkO+qxasNMOq/3sp43IPC8vKHB5PkTC7vuOo2K8+4xpIrRaduJqFtzt5TzGXJ82cvHMoXBvInrEU39YXZD+GRxVnf7zgaTbAwm9kYpLkreBXWyqwHsg==</ds:SignatureValue><ds:KeyInfo><wsse:SecurityTokenReference><wsse:Reference URI="#X509Token-00000000-0000-0000-0000-000000000001" ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3"/></wsse:SecurityTokenReference></ds:KeyInfo></ds:Signature></wsse:Security>
+    <eb:Messaging soap:mustUnderstand="true" wsu:Id="ebMessage">
+      <eb:UserMessage>
+        <eb:MessageInfo>
+          <eb:Timestamp>2024-01-15T10:30:00Z</eb:Timestamp>
+          <eb:MessageId>11111111-2222-3333-4444-555555555555@example.com</eb:MessageId>
+        </eb:MessageInfo>
+        <eb:PartyInfo>
+          <eb:From>
+            <eb:PartyId type="urn:example:identifiers:ap">PAP000001</eb:PartyId>
+            <eb:Role>http://docs.oasis-open.org/ebxml-msg/ebms/v3.0/ns/core/200704/initiator</eb:Role>
+          </eb:From>
+          <eb:To>
+            <eb:PartyId type="urn:example:identifiers:ap">PAP000002</eb:PartyId>
+            <eb:Role>http://docs.oasis-open.org/ebxml-msg/ebms/v3.0/ns/core/200704/responder</eb:Role>
+          </eb:To>
+        </eb:PartyInfo>
+        <eb:CollaborationInfo>
+          <eb:Service type="cenbii-procid-ubl">urn:example:billing</eb:Service>
+          <eb:Action>busdox-docid-qns::urn:example:document:1.0</eb:Action>
+          <eb:ConversationId>11111111-2222-3333-4444-555555555555@example.com</eb:ConversationId>
+        </eb:CollaborationInfo>
+        <eb:MessageProperties>
+          <eb:Property name="originalSender" type="urn:example:actorid">0000:100000001</eb:Property>
+          <eb:Property name="finalRecipient" type="urn:example:actorid">0000:100000002</eb:Property>
+        </eb:MessageProperties>
+        <eb:PayloadInfo>
+          <eb:PartInfo href="cid:attachment-99999999-8888-7777-6666-555555555555@example.com">
+            <eb:PartProperties>
+              <eb:Property name="MimeType">application/xml</eb:Property>
+              <eb:Property name="CompressionType">application/gzip</eb:Property>
+            </eb:PartProperties>
+          </eb:PartInfo>
+        </eb:PayloadInfo>
+      </eb:UserMessage>
+    </eb:Messaging>
+  </soap:Header>
+  <soap:Body wsu:Id="soapBody"/>
+</soap:Envelope>

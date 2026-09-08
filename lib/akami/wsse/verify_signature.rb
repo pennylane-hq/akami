@@ -21,7 +21,10 @@ module Akami
       # the result of the decryption
       # { 'phase4-att-1f34-4d68a..' => 'kZ\xB4\xCD}\xCB..' }
       def initialize(xml, decrypted_attachments: {})
-        @document = Nokogiri::XML(xml.to_s, &:noblanks)
+        # Whitespace must reach the canonicalizer untouched: Canonical XML requires all
+        # whitespace inside the document element to be preserved, so dropping blank nodes
+        # here would digest bytes the signer never signed.
+        @document = Nokogiri::XML(xml.to_s)
         @decrypted_attachments = decrypted_attachments
       end
 
