@@ -6,18 +6,15 @@ repos:
         language: pygrep
         entry: (?i)(NOT.{,3}COMMIT)
         exclude: (?x)(.pre-commit-config.yaml)$
-      - id: rubocop
-        name: Rubocop
+      - id: standardrb
+        name: Standard
         language: system
-        entry: bundle exec rubocop
+        entry: bundle exec standardrb
         require_serial: true # for proper cache behavior
         files: (?x)(
           \.(rb|rake)$|Gemfile$|Rakefile|.irbrc$)
         args:
-          - --autocorrect
-          - --color
-          - --server
-          - --config=.rubocop.yml
+          - --fix
       - id: encrypted_ssh_keys
         name: Encrypted SSH keys
         language: system
