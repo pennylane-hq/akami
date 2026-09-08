@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Akami::WSSE::VerifySignature do
-
   it 'validates correctly signed XML messages' do
     xml = fixture('akami/wsse/verify_signature/valid.xml')
     validator = described_class.new(xml)
@@ -29,19 +30,19 @@ describe Akami::WSSE::VerifySignature do
   it 'does not validate signed XML messages with digested content changed' do
     xml = fixture('akami/wsse/verify_signature/invalid_digested_changed.xml')
     validator = described_class.new(xml)
-    expect{ validator.verify! }.to raise_error(Akami::WSSE::InvalidSignature)
+    expect { validator.verify! }.to raise_error(Akami::WSSE::InvalidSignature)
   end
 
   it 'does not validate signed XML messages with digest changed' do
     xml = fixture('akami/wsse/verify_signature/invalid_digest_changed.xml')
     validator = described_class.new(xml)
-    expect{ validator.verify! }.to raise_error(Akami::WSSE::InvalidSignature)
+    expect { validator.verify! }.to raise_error(Akami::WSSE::InvalidSignature)
   end
 
   it 'does not validate signed XML messages with signature changed' do
     xml = fixture('akami/wsse/verify_signature/invalid_signature_changed.xml')
     validator = described_class.new(xml)
-    expect{ validator.verify! }.to raise_error(Akami::WSSE::InvalidSignature)
+    expect { validator.verify! }.to raise_error(Akami::WSSE::InvalidSignature)
   end
 
   it 'validates correctly signed XML messages with SHA256 signature and SHA256 digests' do
