@@ -1,7 +1,5 @@
-# frozen_string_literal: true
-
-require 'nokogiri'
-require 'openssl'
+require "nokogiri"
+require "openssl"
 
 module Akami
   class WSSE
@@ -14,6 +12,8 @@ module Akami
       class InvalidDigest < RuntimeError; end
       class InvalidSignedValue < RuntimeError; end
       class MissingDecryptedAttachment < RuntimeError; end
+
+      attr_reader :document
 
       # @param xml [String] The XML document to verify
       # @param decrypted_attachments [Hash] A hash of decrypted attachments: { 'id' => 'decrypted_string' }
@@ -33,29 +33,23 @@ module Akami
         @namespaces ||= {
           wse: Akami::WSSE::WSE_NAMESPACE,
           wsse: Akami::WSSE::WSE_NAMESPACE,
-          ds: 'http://www.w3.org/2000/09/xmldsig#',
+          ds: "http://www.w3.org/2000/09/xmldsig#",
           wsu: Akami::WSSE::WSU_NAMESPACE,
-          ec: Akami::WSSE::Signature::ExclusiveXMLCanonicalizationAlgorithm,
+          ec: Akami::WSSE::Signature::ExclusiveXMLCanonicalizationAlgorithm
         }
       end
 
-      # Allows to replace used XML namespaces if anyone will ever need. +hash+ should be a
-      # +Hash+ with symbol keys +:wse+, +:ds+, and +:wsu+.
+      # Allows to replace used XML namespaces if anyone will ever need. +hash+ should be a +Hash+ with symbol keys +:wse+, +:ds+, and +:wsu+.
       attr_writer :namespaces
 
       # Returns signer's certificate, bundled in signed document
       def certificate
-        binary_security_tokens = document.xpath('//wse:Security/wse:BinarySecurityToken', namespaces)
-        if binary_security_tokens.size > 1
-          signature_certificate_id = document.at_xpath(
-            '//wse:Security/ds:Signature/ds:KeyInfo/wsse:SecurityTokenReference/wsse:Reference',
-            namespaces,
-          )['URI'][1..] # strip leading '#'
-          certificate_value = document.at_xpath(
-            "//wse:Security/wse:BinarySecurityToken[@wsu:Id=\"#{signature_certificate_id}\"]", namespaces,
-          )
+        binary_security_tokens = document.xpath("//wse:Security/wse:BinarySecurityToken", namespaces)
+        certificate_value = if binary_security_tokens.size > 1
+          signature_certificate_id = document.at_xpath("//wse:Security/ds:Signature/ds:KeyInfo/wsse:SecurityTokenReference/wsse:Reference", namespaces)["URI"][1..] # strip leading '#'
+          document.at_xpath(%(//wse:Security/wse:BinarySecurityToken[@wsu:Id="#{signature_certificate_id}"]), namespaces)
         else
-          certificate_value = binary_security_tokens.first
+          binary_security_tokens.first
         end
 
         OpenSSL::X509::Certificate.new Base64.decode64(certificate_value.text.strip)
@@ -72,7 +66,7 @@ module Akami
       def verify!
         verify
       rescue InvalidDigest, InvalidSignedValue, MissingDecryptedAttachment => e
-        raise InvalidSignature.new(e.message)
+        raise InvalidSignature, e.message
       end
 
       # Returns a hash with currently initialized digesters.
@@ -83,83 +77,51 @@ module Akami
       #
       #   digesters['http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'] = OpenSSL::Digest::SHA512.new
 
-      attr_reader :document, :digesters
-
-      # Constructors for known digest calculating objects
-      # Not frozen: callers may register additional digesters.
-      DIGESTERS = { # rubocop:disable Style/MutableConstant
-        # SHA1
-        'http://www.w3.org/2000/09/xmldsig#sha1' => -> { OpenSSL::Digest.new('SHA1') },
-        # SHA 256
-        'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' => -> { OpenSSL::Digest.new('SHA256') },
-        'http://www.w3.org/2001/04/xmlenc#sha256' => -> { OpenSSL::Digest.new('SHA256') },
-        # GOST R 34.11-94
-        # You need correctly configured gost engine in your system OpenSSL, requires OpenSSL >= 1.0.0
-        # see https://github.com/openssl/openssl/blob/master/engines/ccgost/README.gost
-        'http://www.w3.org/2001/04/xmldsig-more#gostr3411' => lambda {
-          if defined? JRUBY_VERSION
-            OpenSSL::Digest.new('GOST3411')
-          else
-            OpenSSL::Engine.load
-            gost_engine = OpenSSL::Engine.by_id('gost')
-            gost_engine.set_default(0xFFFF)
-            gost_engine.digest('md_gost94')
-          end
-        },
-      }
+      attr_reader :digesters
 
       private
 
       def verify
-        document.xpath('//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference', namespaces).each do |ref|
-          digest_algorithm = ref.at_xpath('//ds:DigestMethod', namespaces)['Algorithm']
+        document.xpath("//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference", namespaces).each do |ref|
+          digest_algorithm = ref.at_xpath("//ds:DigestMethod", namespaces)["Algorithm"]
 
-          transform_inclusive_ns = inclusive_namespaces(ref, './/ds:Transforms/ds:Transform/ec:InclusiveNamespaces')
+          transform_inclusive_ns = inclusive_namespaces(ref, ".//ds:Transforms/ds:Transform/ec:InclusiveNamespaces")
 
-          ref_uri = ref.attributes['URI'].value
-          if ref_uri.start_with?('#')
-            element_id = ref_uri.sub(/^#/, '')
+          ref_uri = ref.attributes["URI"].value
+          if ref_uri.start_with?("#")
+            element_id = ref_uri.sub(/^#/, "")
             element = document.at_xpath(%(//*[@wsu:Id="#{element_id}"]), namespaces)
             generated_digest = generate_digest(element, digest_algorithm, transform_inclusive_ns)
           else
-            element_id = ref_uri.sub(/^cid:/, '')
+            element_id = ref_uri.sub(/^cid:/, "")
             element = @decrypted_attachments[element_id]
-            raise MissingDecryptedAttachment.new("Missing decrypted attachment for #{element_id}") if element.nil?
+            raise MissingDecryptedAttachment, "Missing decrypted attachment for #{element_id}" if element.nil?
 
             generated_digest = digest(element, digest_algorithm).strip
           end
 
           unless supplied_digest(ref) == generated_digest
-            raise InvalidDigest.new("Invalid Digest for #{element_id}")
+            raise InvalidDigest, "Invalid Digest for #{element_id}"
           end
         end
 
-        canonicalization_inclusive_ns = inclusive_namespaces(
-          document,
-          '//ds:CanonicalizationMethod/ec:InclusiveNamespaces',
-        )
+        canonicalization_inclusive_ns = inclusive_namespaces(document, "//ds:CanonicalizationMethod/ec:InclusiveNamespaces")
 
         data = canonicalize(signed_info, canonicalization_inclusive_ns)
         signature = Base64.decode64(signature_value)
-        signature_algorithm = document.at_xpath(
-          '//wse:Security/ds:Signature/ds:SignedInfo/ds:SignatureMethod',
-          namespaces,
-        )['Algorithm']
+        signature_algorithm = document.at_xpath("//wse:Security/ds:Signature/ds:SignedInfo/ds:SignatureMethod", namespaces)["Algorithm"]
         signature_digester = digester_for_signature_method(signature_algorithm)
 
-        certificate.public_key.verify(
-          signature_digester, signature,
-          data,
-        ) or raise InvalidSignedValue.new('Could not verify the signature value')
+        certificate.public_key.verify(signature_digester, signature, data) or raise InvalidSignedValue, "Could not verify the signature value"
       end
 
       def inclusive_namespaces(ref, xpath)
         inclusive_namespaces_element = ref.at_xpath(xpath, namespaces)
-        inclusive_namespaces_element['PrefixList'].split if inclusive_namespaces_element
+        inclusive_namespaces_element["PrefixList"].split if inclusive_namespaces_element
       end
 
       def signed_info
-        document.at_xpath('//wse:Security/ds:Signature/ds:SignedInfo', namespaces)
+        document.at_xpath("//wse:Security/ds:Signature/ds:SignedInfo", namespaces)
       end
 
       # Generate digest for a given +element+ (or its XPath) with a given +algorithm+
@@ -170,12 +132,12 @@ module Akami
       end
 
       def supplied_digest(element)
-        element.at_xpath('.//ds:DigestValue', namespaces).text
+        element.at_xpath(".//ds:DigestValue", namespaces).text
       end
 
       def signature_value
-        element = document.at_xpath('//wse:Security/ds:Signature/ds:SignatureValue', namespaces)
-        element ? element.text : ''
+        element = document.at_xpath("//wse:Security/ds:Signature/ds:SignatureValue", namespaces)
+        element ? element.text : ""
       end
 
       # Calculate digest for string with given algorithm URL and Base64 encodes it.
@@ -186,18 +148,40 @@ module Akami
       # Returns digester for calculating digest for signature verification
       def digester_for_signature_method(algorithm_url)
         signature_digest_mapping = {
-          'http://www.w3.org/2000/09/xmldsig#rsa-sha1' => 'http://www.w3.org/2000/09/xmldsig#sha1',
-          'http://www.w3.org/2001/04/xmldsig-more#gostr34102001-gostr3411' => 'http://www.w3.org/2001/04/xmldsig-more#gostr3411',
+          "http://www.w3.org/2000/09/xmldsig#rsa-sha1" => "http://www.w3.org/2000/09/xmldsig#sha1",
+          "http://www.w3.org/2001/04/xmldsig-more#gostr34102001-gostr3411" => "http://www.w3.org/2001/04/xmldsig-more#gostr3411"
         }
         digest_url = signature_digest_mapping[algorithm_url] || algorithm_url
         digester(digest_url)
       end
 
+      # Constructors for known digest calculating objects
+      DIGESTERS = {
+        # SHA1
+        "http://www.w3.org/2000/09/xmldsig#sha1" => lambda { OpenSSL::Digest.new("SHA1") },
+        # SHA 256
+        "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" => lambda { OpenSSL::Digest.new("SHA256") },
+        "http://www.w3.org/2001/04/xmlenc#sha256" => lambda { OpenSSL::Digest.new("SHA256") },
+        # GOST R 34.11-94
+        # You need correctly configured gost engine in your system OpenSSL, requires OpenSSL >= 1.0.0
+        # see https://github.com/openssl/openssl/blob/master/engines/ccgost/README.gost
+        "http://www.w3.org/2001/04/xmldsig-more#gostr3411" => lambda {
+          if defined? JRUBY_VERSION
+            OpenSSL::Digest.new("GOST3411")
+          else
+            OpenSSL::Engine.load
+            gost_engine = OpenSSL::Engine.by_id("gost")
+            gost_engine.set_default(0xFFFF)
+            gost_engine.digest("md_gost94")
+          end
+        }
+      }
+
       # Returns instance of +OpenSSL::Digest+ class, initialized, reset, and ready to calculate new hashes.
       def digester(url)
         @digesters ||= {}
         unless @digesters[url]
-          DIGESTERS[url] or raise InvalidDigest.new("Digest algorithm not supported: #{url}")
+          DIGESTERS[url] or raise InvalidDigest, "Digest algorithm not supported: #{url}"
           @digesters[url] = DIGESTERS[url].call
         end
         @digesters[url].reset
